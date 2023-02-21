@@ -197,8 +197,6 @@ public class SocialShareUtil {
 
 
     public void shareToFacebook(String imagePath, String text, Activity activity, MethodChannel.Result result) {
-        Log.println(Log.ERROR, "", "=======11111111111=====");
-
         FacebookSdk.sdkInitialize(activity.getApplicationContext());
         callbackManager = callbackManager == null ? CallbackManager.Factory.create() : callbackManager;
         ShareDialog shareDialog = new ShareDialog(activity);
@@ -217,14 +215,11 @@ public class SocialShareUtil {
             @Override
             public void onError(FacebookException error) {
                 System.out.println("---------------onError");
-                Log.println(Log.ERROR, "", "---------------onError"+error.getMessage());
                 result.success(ERROR);
             }
         });
-        Log.println(Log.ERROR, "", "=======222222222222=====");
         File file = new File(imagePath);
         Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-        Log.println(Log.ERROR, "", "=======3333333333=====");
         List<SharePhoto> sharePhotos = new ArrayList<>();
         sharePhotos.add(new SharePhoto.Builder().setImageUrl(fileUri).build());
 
@@ -232,10 +227,8 @@ public class SocialShareUtil {
                 .setShareHashtag(new ShareHashtag.Builder().setHashtag(text).build())
                 .setPhotos(sharePhotos)
                 .build();
-        Log.println(Log.ERROR, "", "=======4444444444=====");
         if (ShareDialog.canShow(SharePhotoContent.class)) {
             shareDialog.show(content);
-            Log.println(Log.ERROR, "", "=======55555555=====");
         }
     }
 
@@ -252,7 +245,6 @@ public class SocialShareUtil {
             }
 
             Intent intent = new Intent(FACEBOOK_STORY_PACKAGE);
-
 
             intent.setType("image/*");
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

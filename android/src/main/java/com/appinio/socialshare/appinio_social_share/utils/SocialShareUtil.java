@@ -89,7 +89,7 @@ public class SocialShareUtil {
     }
 
     public String shareToWeChat(String imagePath, Context activity, String text) {
-        return shareFileAndTextToWeChatTimeLineUI(imagePath, text, activity, WECHAT_PACKAGE);
+        return shareFileAndTextToWeChatShareImgUI(imagePath, text, activity, WECHAT_PACKAGE);
     }
 
     public String shareToQq(String imagePath, Context activity, String text) {
@@ -296,7 +296,7 @@ public class SocialShareUtil {
         }
     }
 
-    private String shareFileAndTextToWeChatTimeLineUI(String imagePath, String text, Context activity, String packageName) {
+    private String shareFileAndTextToWeChatShareImgUI(String imagePath, String text, Context activity, String packageName) {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
 
         if (imagePath != null) {
@@ -305,17 +305,17 @@ public class SocialShareUtil {
             shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
         }
 
-        ComponentName comp = new ComponentName(packageName,"com.tencent.mm.ui.tools.ShareToTimeLineUI");
+        ComponentName comp = new ComponentName(packageName,"com.tencent.mm.ui.tools.ShareImgUI");
         shareIntent.setComponent(comp);
         shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
         shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        shareIntent.setPackage(packageName);
         shareIntent.putExtra("Kdescription", text);
 
         try {
-            activity.startActivity(shareIntent);
+            Intent intent = Intent.createChooser(shareIntent, "Share");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            activity.startActivity(intent);
             return SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();

@@ -27,8 +27,6 @@ public class ShareUtil{
     let argImages: String  = "images";
     let argVideoFile: String  = "videoFile";
 
-
-    
     public func getInstalledApps(result: @escaping FlutterResult){
         let apps = [["instagram","instagram"],["facebook-stories","facebook_stories"],["whatsapp","whatsapp"],["tg","telegram"],["fb-messenger","messenger"],["instagram-stories","instagram_stories"],["twitter","twitter"]]
         var output:[String: Bool] = [:]
@@ -36,7 +34,6 @@ public class ShareUtil{
             if(UIApplication.shared.canOpenURL(URL(string:(app[0])+"://")!)){
                 if(app[0] == "facebook-stories"){
                     output["facebook"] = true
-
                 }
                 output[app[1]] = true
             }else{
@@ -73,18 +70,14 @@ public class ShareUtil{
         return false
     }
 
-
-
     public func shareToTiktok(args : [String: Any?],result: @escaping FlutterResult){
         let images = args[argImages] as? [String]
         let videoFile = args[argVideoFile] as? String
-
 
         let request = TikTokOpenSDKShareRequest()
 
         request.mediaType = images == nil ? TikTokOpenSDKShareMediaType.video : TikTokOpenSDKShareMediaType.image
         var mediaLocalIdentifiers: [String] = []
-
 
         if(videoFile==nil){
             mediaLocalIdentifiers.append(contentsOf: images!)
@@ -102,7 +95,6 @@ public class ShareUtil{
               }
         result(SUCCESS)
     }
-
 
     func shareVideoToInstagramFeed(args : [String: Any?],result: @escaping FlutterResult) {
         let videoFile = args[argImagePath] as? String

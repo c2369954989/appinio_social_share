@@ -127,8 +127,15 @@ public class SocialShareUtil {
     }
 
     public String shareToSMS(String content, Context activity, String imagePath) {
-        String defaultApplication = Settings.Secure.getString(activity.getContentResolver(), SMS_DEFAULT_APPLICATION);
-        return shareFileAndTextToPackage(imagePath, content, activity, defaultApplication);
+        Uri smsToUri = Uri.parse("smsto:");
+
+            Intent sendIntent = new Intent(Intent.ACTION_SENDTO , smsToUri);
+        sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            sendIntent.putExtra("sms_body", content);
+            activity.startActivity(sendIntent);
+        Log.println(Log.ERROR, "", "sendsms");
+
+        return SUCCESS;
     }
 
 

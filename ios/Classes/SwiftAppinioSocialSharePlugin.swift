@@ -87,15 +87,6 @@ public class SwiftAppinioSocialSharePlugin: NSObject, FlutterPlugin, SharingDele
       case TELEGRAM:
           shareUtil.shareToSystem(args:args!, result:result)
           break
-      case WECHAT:
-          shareUtil.shareToWeChat(args:args!, result:result)
-          break
-      case QQ:
-          shareUtil.shareToQq(args:args!, result:result)
-          break
-      case LINE:
-          shareUtil.shareToLine(args:args!, result:result)
-          break
       case MESSENGER:
           shareUtil.shareToMessenger(args: args!, result: result)
           break

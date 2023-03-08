@@ -37,6 +37,11 @@ class AppinioSocialShare {
         .shareToTwitter(message, filePath: filePath);
   }
 
+  Future<String> shareToDiscord(String message, {String? filePath}) {
+    return AppinioSocialSharePlatform.instance
+        .shareToDiscrod(message, filePath: filePath);
+  }
+
   Future<String> shareToInstagramDirect(String message) {
     return AppinioSocialSharePlatform.instance.shareToInstagramDirect(message);
   }

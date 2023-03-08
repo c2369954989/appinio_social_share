@@ -42,6 +42,14 @@ class _MyAppState extends State<MyApp> {
                 child: const Text("ShareToLine"),
                 onPressed: () async { await shareToLine(); },
               ),
+              ElevatedButton(
+                child: const Text("ShareToDiscord"),
+                onPressed: () async { await shareToDiscord(); },
+              ),
+              ElevatedButton(
+                child: const Text("getInstall"),
+                onPressed: () async { await getInstall(); },
+              ),
             ],
           ),
         ));
@@ -50,7 +58,7 @@ class _MyAppState extends State<MyApp> {
   shareToFacebook()async {
     // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
     print("22222222");
-    String response = await appinioSocialShare.shareToFacebook('my first test share message',"/data/user/0/com.staking_power.mina_wallet/cache/OutputFile_1676955782263.jpeg");
+    String response = await appinioSocialShare.shareToFacebook('my first test share message',"/storage/emulated/0/DCIM/Camera/IMG_20230303_115155.jpg");
     print("111111");
     print(response);
     // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);
@@ -59,7 +67,7 @@ class _MyAppState extends State<MyApp> {
   shareToTwitter() async {
     // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
     print("22222222");
-    String response = await appinioSocialShare.shareToTwitter('my first test share message',filePath: "/data/user/0/com.staking_power.mina_wallet/cache/OutputFile_1676955782263.jpeg");
+    String response = await appinioSocialShare.shareToTwitter('my first test share message',filePath: "/storage/emulated/0/DCIM/Camera/IMG_20230303_115155.jpg");
     print("111111");
     print(response);
     // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);
@@ -68,7 +76,7 @@ class _MyAppState extends State<MyApp> {
   shareToWeChat() async {
     // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
     print("22222222");
-    String response = await appinioSocialShare.shareToWeChat('my first test share message',filePath: "/data/user/0/com.staking_power.mina_wallet/cache/OutputFile_1676955782263.jpeg");
+    String response = await appinioSocialShare.shareToWeChat('my first test share message',filePath: "/storage/emulated/0/DCIM/Camera/IMG_20230303_115155.jpg");
     print("111111");
     print(response);
     // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);
@@ -77,7 +85,7 @@ class _MyAppState extends State<MyApp> {
   shareToQq() async {
     // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
     print("22222222");
-    String response = await appinioSocialShare.shareToQq('my first test share message',filePath: "/data/user/0/com.staking_power.mina_wallet/cache/OutputFile_1676955782263.jpeg");
+    String response = await appinioSocialShare.shareToQq('my first test share message',filePath: "/storage/emulated/0/DCIM/Camera/IMG_20230303_115155.jpg");
     print("111111");
     print(response);
     // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);
@@ -86,7 +94,26 @@ class _MyAppState extends State<MyApp> {
   shareToLine() async {
     // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
     print("22222222");
-    String response = await appinioSocialShare.shareToLine('my first test share message',filePath: "/data/user/0/com.staking_power.mina_wallet/cache/OutputFile_1676955782263.jpeg");
+    String response = await appinioSocialShare.shareToLine('my first test share message',filePath: "/storage/emulated/0/DCIM/Camera/IMG_20230303_115155.jpg");
+    print("111111");
+    print(response);
+    // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);
+  }
+
+
+  shareToDiscord() async {
+    // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
+    print("22222222");
+    String response = await appinioSocialShare.shareToDiscord('my first test share message',filePath: "/storage/emulated/0/DCIM/Camera/IMG_20230303_115155.jpg");
+    print("111111");
+    print(response);
+    // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);
+  }
+
+  getInstall() async {
+    // String response = await appinioSocialShare.shareToFacebookStory('1312443126001084');
+    print("22222222");
+    Map response = await appinioSocialShare.getInstalledApps();
     print("111111");
     print(response);
     // await appinioSocialShare.shareToWhatsapp(message, filePath: filePath);

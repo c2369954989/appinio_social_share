@@ -35,429 +35,491 @@ import java.util.Map;
 import io.flutter.plugin.common.MethodChannel;
 
 public class SocialShareUtil {
-    public static final String ERROR_APP_NOT_AVAILABLE = "ERROR_APP_NOT_AVAILABLE";
-    public static final String ERROR = "ERROR";
-    public static final String SUCCESS = "SUCCESS";
+  public static final String ERROR_APP_NOT_AVAILABLE = "ERROR_APP_NOT_AVAILABLE";
+  public static final String ERROR = "ERROR";
+  public static final String SUCCESS = "SUCCESS";
 
-    //packages
-    private final String INSTAGRAM_PACKAGE = "com.instagram.android";
-    private final String TWITTER_PACKAGE = "com.twitter.android";
-    private final String INSTAGRAM_STORY_PACKAGE = "com.instagram.share.ADD_TO_STORY";
-    private final String INSTAGRAM_FEED_PACKAGE = "com.instagram.share.ADD_TO_FEED";
-    private final String WHATSAPP_PACKAGE = "com.whatsapp";
-    private final String TELEGRAM_PACKAGE = "org.telegram.messenger";
-    private final String TIKTOK_PACKAGE = "com.zhiliaoapp.musically";
-    private final String FACEBOOK_STORY_PACKAGE = "com.facebook.stories.ADD_TO_STORY";
-    private final String FACEBOOK_PACKAGE = "com.facebook.katana";
-    private final String FACEBOOK_LITE_PACKAGE = "com.facebook.lite";
-    private final String FACEBOOK_MESSENGER_PACKAGE = "com.facebook.orca";
-    private final String FACEBOOK_MESSENGER_LITE_PACKAGE = "com.facebook.mlite";
-    private final String SMS_DEFAULT_APPLICATION = "sms_default_application";
+  //packages
+  private final String INSTAGRAM_PACKAGE = "com.instagram.android";
+  private final String TWITTER_PACKAGE = "com.twitter.android";
+  private final String INSTAGRAM_STORY_PACKAGE = "com.instagram.share.ADD_TO_STORY";
+  private final String INSTAGRAM_FEED_PACKAGE = "com.instagram.share.ADD_TO_FEED";
+  private final String WHATSAPP_PACKAGE = "com.whatsapp";
+  private final String TELEGRAM_PACKAGE = "org.telegram.messenger";
+  private final String TIKTOK_PACKAGE = "com.zhiliaoapp.musically";
+  private final String FACEBOOK_STORY_PACKAGE = "com.facebook.stories.ADD_TO_STORY";
+  private final String FACEBOOK_PACKAGE = "com.facebook.katana";
+  private final String FACEBOOK_LITE_PACKAGE = "com.facebook.lite";
+  private final String FACEBOOK_MESSENGER_PACKAGE = "com.facebook.orca";
+  private final String FACEBOOK_MESSENGER_LITE_PACKAGE = "com.facebook.mlite";
+  private final String SMS_DEFAULT_APPLICATION = "sms_default_application";
 
-    private final String WECHAT_PACKAGE = "com.tencent.mm";
+  private final String WECHAT_PACKAGE = "com.tencent.mm";
 
-    private final String QQ_PACKAGE = "com.tencent.mobileqq";
+  private final String QQ_PACKAGE = "com.tencent.mobileqq";
 
-    private final String LINE_PACKAGE = "jp.naver.line.android";
+  private final String LINE_PACKAGE = "jp.naver.line.android";
 
-    private static CallbackManager callbackManager;
+  private final String DISCORD_PACKAGE = "com.discord";
+
+  private static CallbackManager callbackManager;
 
 
-    public String shareToWhatsApp(String imagePath, String msg, Context context) {
-        return shareFileAndTextToPackage(imagePath, msg, context, WHATSAPP_PACKAGE);
+  public String shareToWhatsApp(String imagePath, String msg, Context context) {
+    return shareFileAndTextToPackage(imagePath, msg, context, WHATSAPP_PACKAGE);
+  }
+
+
+  public String shareToInstagramDirect(String text, Context activity) {
+    return shareTextToPackage(text, activity, INSTAGRAM_PACKAGE);
+  }
+
+  public String shareToInstagramFeed(String imagePath, Context activity, String text) {
+    return shareFileAndTextToPackage(imagePath, text, activity, INSTAGRAM_PACKAGE);
+  }
+
+  public String shareToTikTok(String imagePath, Context activity, String text) {
+    return shareFileAndTextToPackage(imagePath, text, activity, TIKTOK_PACKAGE);
+  }
+
+  public String shareToTwitter(String imagePath, Context activity, String text) {
+    return shareFileAndTextToTwitter(imagePath, text, activity, TWITTER_PACKAGE);
+  }
+
+  public String shareToDiscord(String imagePath, Context activity, String text) {
+    return shareToDiscord(imagePath, text, activity, DISCORD_PACKAGE);
+  }
+
+  public String shareToTelegram(String imagePath, Context activity, String text) {
+    return shareFileAndTextToTelegram(imagePath, text, activity, TELEGRAM_PACKAGE);
+  }
+
+  public String shareToWeChat(String imagePath, Context activity, String text) {
+    return shareFileAndTextToWeChatShareImgUI(imagePath, text, activity, WECHAT_PACKAGE);
+  }
+
+  public String shareToQq(String imagePath, Context activity, String text) {
+    return shareFileAndTextToPackage(imagePath, text, activity, QQ_PACKAGE);
+  }
+
+  public String shareToLine(String imagePath, Context activity, String text) {
+    return shareFileAndTextToPackage(imagePath, text, activity, LINE_PACKAGE);
+  }
+
+
+  public String shareToMessenger(String text, Context activity) {
+    Map<String, Boolean> apps = getInstalledApps(activity);
+    String packageName;
+    if (apps.get("messenger")) {
+      packageName = FACEBOOK_MESSENGER_PACKAGE;
+    } else if (apps.get("messenger-lite")) {
+      packageName = FACEBOOK_MESSENGER_LITE_PACKAGE;
+    } else {
+      return ERROR_APP_NOT_AVAILABLE;
     }
+    return shareTextToPackage(text, activity, packageName);
+  }
 
 
-    public String shareToInstagramDirect(String text, Context activity) {
-        return shareTextToPackage(text, activity, INSTAGRAM_PACKAGE);
+  public String copyToClipBoard(String content, Context activity) {
+    try {
+      ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+      ClipData clip = ClipData.newPlainText("", content);
+      clipboard.setPrimaryClip(clip);
+      return SUCCESS;
+    } catch (Exception e) {
+      return ERROR;
     }
+  }
 
-    public String shareToInstagramFeed(String imagePath, Context activity, String text) {
-        return shareFileAndTextToPackage(imagePath, text, activity, INSTAGRAM_PACKAGE);
-    }
+  public String shareToSMS(String content, Context activity, String imagePath) {
+    Uri smsToUri = Uri.parse("smsto:");
 
-    public String shareToTikTok(String imagePath, Context activity, String text) {
-        return shareFileAndTextToPackage(imagePath, text, activity, TIKTOK_PACKAGE);
-    }
+    Intent sendIntent = new Intent(Intent.ACTION_SENDTO, smsToUri);
+    sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    sendIntent.putExtra("sms_body", content);
+    activity.startActivity(sendIntent);
+    Log.println(Log.ERROR, "", "sendsms");
 
-    public String shareToTwitter(String imagePath, Context activity, String text) {
-        return shareFileAndTextToTwitter(imagePath, text, activity, TWITTER_PACKAGE);
-    }
+    return SUCCESS;
+  }
 
-    public String shareToTelegram(String imagePath, Context activity, String text) {
-        return shareFileAndTextToTelegram(imagePath, text, activity, TELEGRAM_PACKAGE);
-    }
-
-    public String shareToWeChat(String imagePath, Context activity, String text) {
-        return shareFileAndTextToWeChatShareImgUI(imagePath, text, activity, WECHAT_PACKAGE);
-    }
-
-    public String shareToQq(String imagePath, Context activity, String text) {
-        return shareFileAndTextToPackage(imagePath, text, activity, QQ_PACKAGE);
-    }
-
-    public String shareToLine(String imagePath, Context activity, String text) {
-        return shareFileAndTextToPackage(imagePath, text, activity, LINE_PACKAGE);
-    }
-
-
-    public String shareToMessenger(String text, Context activity) {
-        Map<String, Boolean> apps = getInstalledApps(activity);
-        String packageName;
-        if(apps.get("messenger")){
-            packageName = FACEBOOK_MESSENGER_PACKAGE;
-        }else if(apps.get("messenger-lite")){
-            packageName = FACEBOOK_MESSENGER_LITE_PACKAGE;
-        }else{
-            return ERROR_APP_NOT_AVAILABLE;
-        }
-        return shareTextToPackage(text, activity, packageName);
-    }
-
-
-    public String copyToClipBoard(String content, Context activity) {
-        try {
-            ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("", content);
-            clipboard.setPrimaryClip(clip);
-            return SUCCESS;
-        } catch (Exception e) {
-            return ERROR;
-        }
-    }
-
-    public String shareToSMS(String content, Context activity, String imagePath) {
-        Uri smsToUri = Uri.parse("smsto:");
-
-            Intent sendIntent = new Intent(Intent.ACTION_SENDTO , smsToUri);
-        sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            sendIntent.putExtra("sms_body", content);
-            activity.startActivity(sendIntent);
-        Log.println(Log.ERROR, "", "sendsms");
-
-        return SUCCESS;
-    }
-
-
-    public String shareToSystem(String title, String text, String filePath, String fileType, String chooserTitle, Context activity) {
-        try {
-
-            Intent intent = new Intent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setAction(Intent.ACTION_SEND);
-            if (filePath != null && !filePath.isEmpty()) {
-                File file = new File(filePath);
-                Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-                intent.setType(fileType);
-                intent.putExtra(Intent.EXTRA_STREAM, fileUri);
-            } else {
-                intent.setType("text/*");
-            }
-
-
-            intent.putExtra(Intent.EXTRA_SUBJECT, title);
-            intent.putExtra(Intent.EXTRA_TEXT, text);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Intent chooserIntent = Intent.createChooser(intent, chooserTitle);
-            chooserIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(chooserIntent);
-            return SUCCESS;
-        } catch (Exception ex) {
-            Log.println(Log.ERROR, "", "FlutterShare: Error");
-            return ERROR;
-        }
-    }
-
-
-    public String shareToInstagramStory(String stickerImage, String backgroundImage, String backgroundTopColor, String backgroundBottomColor, String attributionURL, Context activity) {
-
-        try {
-
-            Intent shareIntent = new Intent(INSTAGRAM_STORY_PACKAGE);
-            shareIntent.setType("image/*");
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if(stickerImage!=null){
-                File file = new File(stickerImage);
-                Uri stickerImageUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-                shareIntent.putExtra("interactive_asset_uri", stickerImageUri);
-                activity.grantUriPermission("com.instagram.android", stickerImageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            if (backgroundImage != null) {
-                File file1 = new File(backgroundImage);
-                Uri backgroundImageUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file1);
-                shareIntent.setDataAndType(backgroundImageUri, getMimeTypeOfFile(backgroundImage));
-                activity.grantUriPermission("com.instagram.android", backgroundImageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            shareIntent.putExtra("content_url", attributionURL);
-            shareIntent.putExtra("top_background_color", backgroundTopColor);
-            shareIntent.putExtra("bottom_background_color", backgroundBottomColor);
-            activity.startActivity(shareIntent);
-            return SUCCESS;
-        } catch (Exception e) {
-            return ERROR;
-        }
-
-    }
-
-
-    public void shareToFacebook(String imagePath, String text, Activity activity, MethodChannel.Result result) {
-        FacebookSdk.sdkInitialize(activity.getApplicationContext());
-        callbackManager = callbackManager == null ? CallbackManager.Factory.create() : callbackManager;
-        ShareDialog shareDialog = new ShareDialog(activity);
-        shareDialog.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
-            @Override
-            public void onSuccess(Sharer.Result result1) {
-                System.out.println("---------------onSuccess");
-                result.success(SUCCESS);
-            }
-
-            @Override
-            public void onCancel() {
-                result.success(ERROR);
-            }
-
-            @Override
-            public void onError(FacebookException error) {
-                System.out.println("---------------onError");
-                result.success(ERROR);
-            }
-        });
-        File file = new File(imagePath);
+  public String shareToSystem(String title, String text, String filePath, String fileType, String chooserTitle, Context activity) {
+    try {
+      Intent intent = new Intent();
+      intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      intent.setAction(Intent.ACTION_SEND);
+      if (filePath != null && !filePath.isEmpty()) {
+        File file = new File(filePath);
         Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-        List<SharePhoto> sharePhotos = new ArrayList<>();
-        sharePhotos.add(new SharePhoto.Builder().setImageUrl(fileUri).build());
+        intent.setType(fileType);
+        intent.putExtra(Intent.EXTRA_STREAM, fileUri);
+      } else {
+        intent.setType("text/*");
+      }
+      intent.putExtra(Intent.EXTRA_SUBJECT, title);
+      intent.putExtra(Intent.EXTRA_TEXT, text);
+      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      Intent chooserIntent = Intent.createChooser(intent, chooserTitle);
+      chooserIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      activity.startActivity(chooserIntent);
+      return SUCCESS;
+    } catch (Exception ex) {
+      Log.println(Log.ERROR, "", "FlutterShare: Error");
+      return ERROR;
+    }
+  }
 
-        SharePhotoContent content = new SharePhotoContent.Builder()
-                .setShareHashtag(new ShareHashtag.Builder().setHashtag(text).build())
-                .setPhotos(sharePhotos)
-                .build();
-        if (ShareDialog.canShow(SharePhotoContent.class)) {
-            shareDialog.show(content);
-        }
+  public String shareToInstagramStory(String stickerImage, String backgroundImage, String backgroundTopColor, String backgroundBottomColor, String attributionURL, Context activity) {
+
+    try {
+
+      Intent shareIntent = new Intent(INSTAGRAM_STORY_PACKAGE);
+      shareIntent.setType("image/*");
+      shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      if (stickerImage != null) {
+        File file = new File(stickerImage);
+        Uri stickerImageUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+        shareIntent.putExtra("interactive_asset_uri", stickerImageUri);
+        activity.grantUriPermission("com.instagram.android", stickerImageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      }
+      if (backgroundImage != null) {
+        File file1 = new File(backgroundImage);
+        Uri backgroundImageUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file1);
+        shareIntent.setDataAndType(backgroundImageUri, getMimeTypeOfFile(backgroundImage));
+        activity.grantUriPermission("com.instagram.android", backgroundImageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      }
+      shareIntent.putExtra("content_url", attributionURL);
+      shareIntent.putExtra("top_background_color", backgroundTopColor);
+      shareIntent.putExtra("bottom_background_color", backgroundBottomColor);
+      activity.startActivity(shareIntent);
+      return SUCCESS;
+    } catch (Exception e) {
+      return ERROR;
     }
 
-    public String shareToFaceBookStory(String appId, String stickerImage, String backgroundImage, String backgroundTopColor, String backgroundBottomColor, String attributionURL, Context activity) {
-        try {
-            Map<String, Boolean> apps = getInstalledApps(activity);
-            String packageName;
-            if(apps.get("facebook")){
-                packageName = FACEBOOK_PACKAGE;
-            }else if(apps.get("facebook-lite")){
-                packageName = FACEBOOK_LITE_PACKAGE;
-            }else{
-                return ERROR_APP_NOT_AVAILABLE;
-            }
+  }
 
-            Intent intent = new Intent(FACEBOOK_STORY_PACKAGE);
 
-            intent.setType("image/*");
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra("com.facebook.platform.extra.APPLICATION_ID", appId);
-            if(stickerImage!=null) {
-                File file = new File(stickerImage);
-                Uri stickerImageFile = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", file);
-                intent.putExtra("interactive_asset_uri", stickerImageFile);
-                activity.grantUriPermission(packageName, stickerImageFile, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            intent.putExtra("content_url", attributionURL);
-            intent.putExtra("top_background_color", backgroundTopColor);
-            intent.putExtra("bottom_background_color", backgroundBottomColor);
-            if(backgroundImage!=null){
-                File file1 = new File(backgroundImage);
-                Uri backgroundImageUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", file1);
-                intent.setDataAndType(backgroundImageUri, getMimeTypeOfFile(backgroundImage));
-                activity.grantUriPermission(packageName, backgroundImageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            activity.startActivity(intent);
-            return SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ERROR;
-        }
+  public void shareToFacebook(String imagePath, String text, Activity activity, MethodChannel.Result result) {
+    FacebookSdk.sdkInitialize(activity.getApplicationContext());
+    callbackManager = CallbackManager.Factory.create();//callbackManager == null ? CallbackManager.Factory.create() : callbackManager;
+    ShareDialog shareDialog = new ShareDialog(activity);
+
+    File file = new File(imagePath);
+    Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+    List<SharePhoto> sharePhotos = new ArrayList<>();
+    sharePhotos.add(new SharePhoto.Builder().setImageUrl(fileUri).build());
+
+
+    Log.println(Log.ERROR, "", "---------------start");
+    shareDialog.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
+      @Override
+      public void onSuccess(Sharer.Result result1) {
+        Log.println(Log.ERROR, "", "---------------onSuccess");
+//                System.out.println("---------------onSuccess");
+        result.success(SUCCESS);
+      }
+
+      @Override
+      public void onCancel() {
+        Log.println(Log.ERROR, "", "---------------onCancel");
+        result.success(ERROR);
+      }
+
+      @Override
+      public void onError(FacebookException error) {
+        Log.println(Log.ERROR, "", "---------------onError");
+        result.success(ERROR);
+      }
+    });
+
+
+    SharePhotoContent content = new SharePhotoContent.Builder()
+            .setShareHashtag(new ShareHashtag.Builder().setHashtag(text).build())
+            .setPhotos(sharePhotos)
+            .build();
+    if (ShareDialog.canShow(SharePhotoContent.class)) {
+      shareDialog.show(content);
+    }
+  }
+
+  public String shareToFaceBookStory(String appId, String stickerImage, String backgroundImage, String backgroundTopColor, String backgroundBottomColor, String attributionURL, Context activity) {
+    try {
+      Map<String, Boolean> apps = getInstalledApps(activity);
+      String packageName;
+      if (apps.get("facebook")) {
+        packageName = FACEBOOK_PACKAGE;
+      } else if (apps.get("facebook-lite")) {
+        packageName = FACEBOOK_LITE_PACKAGE;
+      } else {
+        return ERROR_APP_NOT_AVAILABLE;
+      }
+
+      Intent intent = new Intent(FACEBOOK_STORY_PACKAGE);
+
+      intent.setType("image/*");
+      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      intent.putExtra("com.facebook.platform.extra.APPLICATION_ID", appId);
+      if (stickerImage != null) {
+        File file = new File(stickerImage);
+        Uri stickerImageFile = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", file);
+        intent.putExtra("interactive_asset_uri", stickerImageFile);
+        activity.grantUriPermission(packageName, stickerImageFile, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      }
+      intent.putExtra("content_url", attributionURL);
+      intent.putExtra("top_background_color", backgroundTopColor);
+      intent.putExtra("bottom_background_color", backgroundBottomColor);
+      if (backgroundImage != null) {
+        File file1 = new File(backgroundImage);
+        Uri backgroundImageUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", file1);
+        intent.setDataAndType(backgroundImageUri, getMimeTypeOfFile(backgroundImage));
+        activity.grantUriPermission(packageName, backgroundImageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      }
+      activity.startActivity(intent);
+      return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
+    }
+  }
+
+  public String shareToDiscord(String imagePath, String text, Context activity, String packageName) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+    if (imagePath != null) {
+      File file = new File(imagePath);
+      Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
-    private String shareTextToPackage(
-            String text,
-            Context context,
-            String packageName
-    ) {
-        try {
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(Intent.EXTRA_TEXT, text);
-            intent.putExtra("content_url", text);
-            intent.putExtra("source_application", context.getPackageName());
-            intent.putExtra(Intent.EXTRA_TITLE, text);
-            intent.putExtra("com.facebook.platform.extra.APPLICATION_ID", "256861974474648");
-            intent.setPackage(packageName);
-            context.startActivity(intent);
-            return SUCCESS;
-        } catch (Exception e) {
-            return ERROR;
-        }
+//    shareIntent.setPackage(packageName);
+//    ComponentName comp = new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareImgUI");
+    ComponentName comp = new ComponentName(packageName, "com.discord.share.ShareActivity");
+    shareIntent.setComponent(comp);
+    shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
+
+//            shareIntent.setComponent(comp);
+//            shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
+//            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+//            shareIntent.putExtra("Kdescription", text);
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+
+    try {
+      activity.startActivity(shareIntent); return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
     }
 
-    private String shareFileAndTextToWeChatShareImgUI(String imagePath, String text, Context activity, String packageName) {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+//    try {
+//      Intent intent = Intent.createChooser(shareIntent, "Share");
+//      intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//      activity.startActivity(intent);
+//      return SUCCESS;
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      return ERROR;
+//    }
+  }
 
-        if (imagePath != null) {
-            File file = new File(imagePath);
-            Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-        }
+  private String shareTextToPackage(
+          String text,
+          Context context,
+          String packageName
+  ) {
+    try {
+      Intent intent = new Intent(Intent.ACTION_SEND);
+      intent.setType("text/plain");
+      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      intent.putExtra(Intent.EXTRA_TEXT, text);
+      intent.putExtra("content_url", text);
+      intent.putExtra("source_application", context.getPackageName());
+      intent.putExtra(Intent.EXTRA_TITLE, text);
+      intent.putExtra("com.facebook.platform.extra.APPLICATION_ID", "256861974474648");
+      intent.setPackage(packageName);
+      context.startActivity(intent);
+      return SUCCESS;
+    } catch (Exception e) {
+      return ERROR;
+    }
+  }
 
-        ComponentName comp = new ComponentName(packageName,"com.tencent.mm.ui.tools.ShareImgUI");
-        shareIntent.setComponent(comp);
-        shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-        shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-        shareIntent.putExtra("Kdescription", text);
+  private String shareFileAndTextToWeChatShareImgUI(String imagePath, String text, Context activity, String packageName) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
 
-        try {
-            Intent intent = Intent.createChooser(shareIntent, "Share");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            activity.startActivity(intent);
-            return SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ERROR;
-        }
+    if (imagePath != null) {
+      File file = new File(imagePath);
+      Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
-    private String shareFileAndTextToTwitter(String imagePath, String text, Context activity, String packageName) {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+//    shareIntent.setPackage(packageName);
+//    ComponentName comp = new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareImgUI");
+    ComponentName comp = new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareImgUI");
+    shareIntent.setComponent(comp);
+    shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
 
-        if (imagePath != null) {
-            File file = new File(imagePath);
-            Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-        }
+//            shareIntent.setComponent(comp);
+//            shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
+            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+            shareIntent.putExtra("Kdescription", text);
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
 
-        ComponentName comp = new ComponentName(packageName,"com.twitter.composer.ComposerActivity");
+    Intent chooserIntent = Intent.createChooser(shareIntent, "staking-power-wallet");
+    chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    chooserIntent.putExtra("Kdescription", text);
 
-        shareIntent.setComponent(comp);
+    try {
+      activity.startActivity(chooserIntent);
 
-        shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-        shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        shareIntent.setPackage(packageName);
+//      activity.startActivity(shareIntent);
+      return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
+    }
+  }
 
-        try {
-            activity.startActivity(shareIntent);
-            return SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ERROR;
-        }
+  private String shareFileAndTextToTwitter(String imagePath, String text, Context activity, String packageName) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+    if (imagePath != null) {
+      File file = new File(imagePath);
+      Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
-    private String shareFileAndTextToTelegram(String imagePath, String text, Context activity, String packageName) {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+    ComponentName comp = new ComponentName(packageName, "com.twitter.composer.ComposerActivity");
 
-        if (imagePath != null) {
-            File file = new File(imagePath);
-            Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-        }
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-        shareIntent.setPackage(packageName);
+    shareIntent.setComponent(comp);
 
-        Intent chooserIntent = Intent.createChooser(shareIntent, "staking-power-wallet");
-        chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+    shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    shareIntent.setPackage(packageName);
 
-        try {
-            activity.startActivity(chooserIntent);
-            return SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ERROR;
-        }
+    try {
+      activity.startActivity(shareIntent);
+      return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
+    }
+  }
+
+  private String shareFileAndTextToTelegram(String imagePath, String text, Context activity, String packageName) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+    if (imagePath != null) {
+      File file = new File(imagePath);
+      Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+    }
+    shareIntent.setType("text/plain");
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+    shareIntent.setPackage(packageName);
+
+    Intent chooserIntent = Intent.createChooser(shareIntent, "staking-power-wallet");
+    chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+    try {
+      activity.startActivity(chooserIntent);
+      return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
+    }
+  }
+
+
+  private String shareFileAndTextToPackage(String imagePath, String text, Context activity, String packageName) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+    if (imagePath != null) {
+      File file = new File(imagePath);
+      Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
+    shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+    shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    shareIntent.setPackage(packageName);
 
-    private String shareFileAndTextToPackage(String imagePath, String text, Context activity, String packageName) {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-
-        if (imagePath != null) {
-            File file = new File(imagePath);
-            Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-        }
-
-        shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-        shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        shareIntent.setPackage(packageName);
-
-        try {
-            activity.startActivity(shareIntent);
-            return SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ERROR;
-        }
+    try {
+      activity.startActivity(shareIntent);
+      return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
     }
+  }
 
-    public Map<String, Boolean> getInstalledApps(Context context) {
-        Map<String, String> appsMap = new HashMap();
-        appsMap.put("instagram", INSTAGRAM_PACKAGE);
-        appsMap.put("facebook_stories", FACEBOOK_PACKAGE);
-        appsMap.put("whatsapp", WHATSAPP_PACKAGE);
-        appsMap.put("telegram", TELEGRAM_PACKAGE);
-        appsMap.put("wechat", WECHAT_PACKAGE);
-        appsMap.put("qq", QQ_PACKAGE);
-        appsMap.put("line", LINE_PACKAGE);
-        appsMap.put("messenger", FACEBOOK_MESSENGER_PACKAGE);
-        appsMap.put("messenger-lite", FACEBOOK_MESSENGER_LITE_PACKAGE);
-        appsMap.put("facebook", FACEBOOK_PACKAGE);
-        appsMap.put("facebook-lite", FACEBOOK_LITE_PACKAGE);
-        appsMap.put("instagram_stories", INSTAGRAM_PACKAGE);
-        appsMap.put("twitter", TWITTER_PACKAGE);
-        appsMap.put("tiktok", TIKTOK_PACKAGE);
+  public Map<String, Boolean> getInstalledApps(Context context) {
+    Map<String, String> appsMap = new HashMap();
+    appsMap.put("instagram", INSTAGRAM_PACKAGE);
+    appsMap.put("facebook_stories", FACEBOOK_PACKAGE);
+    appsMap.put("whatsapp", WHATSAPP_PACKAGE);
+    appsMap.put("telegram", TELEGRAM_PACKAGE);
+//        appsMap.put("wechat", WECHAT_PACKAGE);
+//        appsMap.put("qq", QQ_PACKAGE);
+    appsMap.put("line", LINE_PACKAGE);
+    appsMap.put("messenger", FACEBOOK_MESSENGER_PACKAGE);
+    appsMap.put("messenger-lite", FACEBOOK_MESSENGER_LITE_PACKAGE);
+    appsMap.put("facebook", FACEBOOK_PACKAGE);
+    appsMap.put("facebook-lite", FACEBOOK_LITE_PACKAGE);
+    appsMap.put("instagram_stories", INSTAGRAM_PACKAGE);
+    appsMap.put("twitter", TWITTER_PACKAGE);
+//        appsMap.put("tiktok", TIKTOK_PACKAGE);
+    appsMap.put("discord", DISCORD_PACKAGE);
 
-        Map<String, Boolean> apps = new HashMap<String, Boolean>();
+    Map<String, Boolean> apps = new HashMap<String, Boolean>();
 
-        PackageManager pm = context.getPackageManager();
+    PackageManager pm = context.getPackageManager();
 
-        Intent intent = new Intent(Intent.ACTION_SENDTO).addCategory(Intent.CATEGORY_DEFAULT);
-        intent.setType("vnd.android-dir/mms-sms");
-        intent.setData(Uri.parse("sms:"));
-        List<ResolveInfo> resolvedActivities = pm.queryIntentActivities(intent, 0);
-        apps.put("message", !resolvedActivities.isEmpty());
-        String[] appNames = {"instagram", "facebook_stories", "whatsapp", "telegram", "wechat","qq","line","messenger", "facebook","facebook-lite","messenger-lite", "instagram_stories", "twitter", "tiktok"};
+    Intent intent = new Intent(Intent.ACTION_SENDTO).addCategory(Intent.CATEGORY_DEFAULT);
+    intent.setType("vnd.android-dir/mms-sms");
+    intent.setData(Uri.parse("sms:"));
+    List<ResolveInfo> resolvedActivities = pm.queryIntentActivities(intent, 0);
+    apps.put("message", !resolvedActivities.isEmpty());
+    String[] appNames = {"instagram", "facebook_stories", "whatsapp", "telegram", "wechat", "qq", "line", "messenger", "facebook", "facebook-lite", "messenger-lite", "instagram_stories", "twitter", "tiktok", "discord"};
 
-        for (int i = 0; i < appNames.length; i++) {
-            try {
-                pm.getPackageInfo(appsMap.get(appNames[i]), PackageManager.GET_META_DATA);
-                apps.put(appNames[i], true);
-            } catch (Exception e) {
-                apps.put(appNames[i], false);
-            }
-        }
-        return apps;
+    for (int i = 0; i < appNames.length; i++) {
+      try {
+        pm.getPackageInfo(appsMap.get(appNames[i]), PackageManager.GET_META_DATA);
+        apps.put(appNames[i], true);
+      } catch (Exception e) {
+        apps.put(appNames[i], false);
+      }
     }
+    return apps;
+  }
 
-    private static String getMimeTypeOfFile(String pathName) {
-        try{
-            Path path = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                path = new File(pathName).toPath();
-                String mimeType = Files.probeContentType(path);
-                return mimeType;
-            }
-            return "*/*";
-        }catch (Exception e){
-            return "";
-        }
+  private static String getMimeTypeOfFile(String pathName) {
+    try {
+      Path path = null;
+      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        path = new File(pathName).toPath();
+        String mimeType = Files.probeContentType(path);
+        return mimeType;
+      }
+      return "*/*";
+    } catch (Exception e) {
+      return "";
     }
+  }
 
 }

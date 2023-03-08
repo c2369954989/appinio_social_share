@@ -28,7 +28,7 @@ public class ShareUtil{
     let argVideoFile: String  = "videoFile";
 
     public func getInstalledApps(result: @escaping FlutterResult){
-        let apps = [["instagram","instagram"],["facebook-stories","facebook_stories"],["whatsapp","whatsapp"],["tg","telegram"],["fb-messenger","messenger"],["instagram-stories","instagram_stories"],["twitter","twitter"]]
+        let apps = [["instagram","instagram"],["facebook-stories","facebook_stories"],["whatsapp","whatsapp"],["tg","telegram"],["fb-messenger","messenger"],["instagram-stories","instagram_stories"],["twitter","twitter"],["wechat","wechat"],["discord","discord"]]
         var output:[String: Bool] = [:]
         for app in apps {
             if(UIApplication.shared.canOpenURL(URL(string:(app[0])+"://")!)){

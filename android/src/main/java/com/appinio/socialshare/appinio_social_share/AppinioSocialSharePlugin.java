@@ -41,6 +41,8 @@ public class AppinioSocialSharePlugin implements FlutterPlugin, MethodCallHandle
     private final String QQ = "qq";
     private final String LINE = "line";
 
+    private final String DISCORD = "discord";
+
 
     private SocialShareUtil socialShareUtil;
     private MethodChannel channel;
@@ -110,6 +112,8 @@ public class AppinioSocialSharePlugin implements FlutterPlugin, MethodCallHandle
                 return socialShareUtil.shareToQq(imagePath, activeContext, message);
             case LINE:
                 return socialShareUtil.shareToLine(imagePath, activeContext, message);
+            case DISCORD:
+                return socialShareUtil.shareToDiscord(imagePath, activeContext, message);
             case TWITTER:
                 return socialShareUtil.shareToTwitter(imagePath, activeContext, message);
             case COPY_TO_CLIPBOARD:

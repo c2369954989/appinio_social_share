@@ -53,59 +53,46 @@ public class SocialShareUtil {
   private final String FACEBOOK_MESSENGER_PACKAGE = "com.facebook.orca";
   private final String FACEBOOK_MESSENGER_LITE_PACKAGE = "com.facebook.mlite";
   private final String SMS_DEFAULT_APPLICATION = "sms_default_application";
-
   private final String WECHAT_PACKAGE = "com.tencent.mm";
-
   private final String QQ_PACKAGE = "com.tencent.mobileqq";
-
   private final String LINE_PACKAGE = "jp.naver.line.android";
-
   private final String DISCORD_PACKAGE = "com.discord";
-
   private static CallbackManager callbackManager;
 
 
   public String shareToWhatsApp(String imagePath, String msg, Context context) {
     return shareFileAndTextToPackage(imagePath, msg, context, WHATSAPP_PACKAGE);
   }
-
-
-  public String shareToInstagramDirect(String text, Context activity) {
-    return shareTextToPackage(text, activity, INSTAGRAM_PACKAGE);
+  public String shareToInstagramDirect(String imagePath, String msg, Context context) {
+    return shareFileAndTextToInstagram(imagePath, msg, context, WHATSAPP_PACKAGE);
   }
-
+  public String shareFileAndTextToInstagram(String imagePath, String text, Context activity) {
+    return shareFileAndTextToInstagram(imagePath, text, activity, INSTAGRAM_PACKAGE);
+  }
   public String shareToInstagramFeed(String imagePath, Context activity, String text) {
     return shareFileAndTextToPackage(imagePath, text, activity, INSTAGRAM_PACKAGE);
   }
-
   public String shareToTikTok(String imagePath, Context activity, String text) {
     return shareFileAndTextToPackage(imagePath, text, activity, TIKTOK_PACKAGE);
   }
-
   public String shareToTwitter(String imagePath, Context activity, String text) {
     return shareFileAndTextToTwitter(imagePath, text, activity, TWITTER_PACKAGE);
   }
-
   public String shareToDiscord(String imagePath, Context activity, String text) {
     return shareToDiscord(imagePath, text, activity, DISCORD_PACKAGE);
   }
-
   public String shareToTelegram(String imagePath, Context activity, String text) {
     return shareFileAndTextToTelegram(imagePath, text, activity, TELEGRAM_PACKAGE);
   }
-
   public String shareToWeChat(String imagePath, Context activity, String text) {
     return shareFileAndTextToWeChatShareImgUI(imagePath, text, activity, WECHAT_PACKAGE);
   }
-
   public String shareToQq(String imagePath, Context activity, String text) {
     return shareFileAndTextToPackage(imagePath, text, activity, QQ_PACKAGE);
   }
-
   public String shareToLine(String imagePath, Context activity, String text) {
     return shareFileAndTextToPackage(imagePath, text, activity, LINE_PACKAGE);
   }
-
 
   public String shareToMessenger(String text, Context activity) {
     Map<String, Boolean> apps = getInstalledApps(activity);
@@ -173,9 +160,7 @@ public class SocialShareUtil {
   }
 
   public String shareToInstagramStory(String stickerImage, String backgroundImage, String backgroundTopColor, String backgroundBottomColor, String attributionURL, Context activity) {
-
     try {
-
       Intent shareIntent = new Intent(INSTAGRAM_STORY_PACKAGE);
       shareIntent.setType("image/*");
       shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -203,10 +188,9 @@ public class SocialShareUtil {
 
   }
 
-
   public void shareToFacebook(String imagePath, String text, Activity activity, MethodChannel.Result result) {
     FacebookSdk.sdkInitialize(activity.getApplicationContext());
-    callbackManager = CallbackManager.Factory.create();//callbackManager == null ? CallbackManager.Factory.create() : callbackManager;
+    callbackManager = callbackManager == null ? CallbackManager.Factory.create() : callbackManager;
     ShareDialog shareDialog = new ShareDialog(activity);
 
     File file = new File(imagePath);
@@ -220,7 +204,6 @@ public class SocialShareUtil {
       @Override
       public void onSuccess(Sharer.Result result1) {
         Log.println(Log.ERROR, "", "---------------onSuccess");
-//                System.out.println("---------------onSuccess");
         result.success(SUCCESS);
       }
 
@@ -237,11 +220,10 @@ public class SocialShareUtil {
       }
     });
 
-
     SharePhotoContent content = new SharePhotoContent.Builder()
-            .setShareHashtag(new ShareHashtag.Builder().setHashtag(text).build())
-            .setPhotos(sharePhotos)
-            .build();
+      .setShareHashtag(new ShareHashtag.Builder().setHashtag(text).build())
+      .setPhotos(sharePhotos)
+      .build();
     if (ShareDialog.canShow(SharePhotoContent.class)) {
       shareDialog.show(content);
     }
@@ -260,7 +242,6 @@ public class SocialShareUtil {
       }
 
       Intent intent = new Intent(FACEBOOK_STORY_PACKAGE);
-
       intent.setType("image/*");
       intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -297,37 +278,20 @@ public class SocialShareUtil {
       shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
-//    shareIntent.setPackage(packageName);
-//    ComponentName comp = new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareImgUI");
     ComponentName comp = new ComponentName(packageName, "com.discord.share.ShareActivity");
     shareIntent.setComponent(comp);
     shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-
-//            shareIntent.setComponent(comp);
-//            shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-//            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-//            shareIntent.putExtra("Kdescription", text);
     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     shareIntent.putExtra(Intent.EXTRA_TEXT, text);
 
     try {
-      activity.startActivity(shareIntent); return SUCCESS;
+      activity.startActivity(shareIntent);
+      return SUCCESS;
     } catch (Exception e) {
       e.printStackTrace();
       return ERROR;
     }
-
-//    try {
-//      Intent intent = Intent.createChooser(shareIntent, "Share");
-//      intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//      activity.startActivity(intent);
-//      return SUCCESS;
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      return ERROR;
-//    }
   }
 
   private String shareTextToPackage(
@@ -362,16 +326,11 @@ public class SocialShareUtil {
       shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
-//    shareIntent.setPackage(packageName);
-//    ComponentName comp = new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareImgUI");
     ComponentName comp = new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareImgUI");
     shareIntent.setComponent(comp);
     shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-
-//            shareIntent.setComponent(comp);
-//            shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
-            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-            shareIntent.putExtra("Kdescription", text);
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+    shareIntent.putExtra("Kdescription", text);
     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     shareIntent.putExtra(Intent.EXTRA_TEXT, text);
@@ -382,8 +341,32 @@ public class SocialShareUtil {
 
     try {
       activity.startActivity(chooserIntent);
+      return SUCCESS;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ERROR;
+    }
+  }
 
-//      activity.startActivity(shareIntent);
+  private String shareFileAndTextToInstagram(String imagePath, String text, Context activity, String packageName) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+    if (imagePath != null) {
+      File file = new File(imagePath);
+      Uri fileUri = FileProvider.getUriForFile(activity, activity.getApplicationContext().getPackageName() + ".provider", file);
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+    }
+
+    ComponentName comp = new ComponentName(packageName, "com.instagram.direct.share.handler.DirectExternalMediaShareActivityPhoto");
+    shareIntent.setComponent(comp);
+    shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
+    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+    shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    shareIntent.setPackage(packageName);
+
+    try {
+      activity.startActivity(shareIntent);
       return SUCCESS;
     } catch (Exception e) {
       e.printStackTrace();
@@ -400,10 +383,8 @@ public class SocialShareUtil {
       shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
     }
 
-    ComponentName comp = new ComponentName(packageName, "com.twitter.composer.ComposerActivity");
-
+    ComponentName comp = new ComponentName(packageName, "com.twitter.app.dm.DMActivity");
     shareIntent.setComponent(comp);
-
     shareIntent.setType(imagePath == null ? "text/*" : getMimeTypeOfFile(imagePath));
     shareIntent.putExtra(Intent.EXTRA_TEXT, text);
     shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -474,8 +455,6 @@ public class SocialShareUtil {
     appsMap.put("facebook_stories", FACEBOOK_PACKAGE);
     appsMap.put("whatsapp", WHATSAPP_PACKAGE);
     appsMap.put("telegram", TELEGRAM_PACKAGE);
-//        appsMap.put("wechat", WECHAT_PACKAGE);
-//        appsMap.put("qq", QQ_PACKAGE);
     appsMap.put("line", LINE_PACKAGE);
     appsMap.put("messenger", FACEBOOK_MESSENGER_PACKAGE);
     appsMap.put("messenger-lite", FACEBOOK_MESSENGER_LITE_PACKAGE);
@@ -483,7 +462,6 @@ public class SocialShareUtil {
     appsMap.put("facebook-lite", FACEBOOK_LITE_PACKAGE);
     appsMap.put("instagram_stories", INSTAGRAM_PACKAGE);
     appsMap.put("twitter", TWITTER_PACKAGE);
-//        appsMap.put("tiktok", TIKTOK_PACKAGE);
     appsMap.put("discord", DISCORD_PACKAGE);
 
     Map<String, Boolean> apps = new HashMap<String, Boolean>();

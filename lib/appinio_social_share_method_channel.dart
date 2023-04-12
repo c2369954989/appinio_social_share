@@ -54,7 +54,7 @@ class MethodChannelAppinioSocialShare extends AppinioSocialSharePlatform {
   }
 
   @override
-  Future<String> shareToDiscrod(String message, {String? filePath}) async {
+  Future<String> shareToDiscord(String message, {String? filePath}) async {
     return ((await methodChannel.invokeMethod<String>(discord, {"imagePath": filePath, "message": message})) ?? "");
   }
 
